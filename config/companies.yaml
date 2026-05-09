@@ -1,0 +1,116 @@
+companies:
+
+  # 🟢 Greenhouse (easy API-based)
+  - name: Pronto AI
+    type: greenhouse
+    url: https://boards.greenhouse.io/pronto
+
+
+
+  # # 🔵 Lever (structured JSON)
+  # - name: dlocal
+  #   type: lever
+  #   url: https://jobs.lever.co/dlocal
+
+  # # - name: usasurveyjob
+  # #   type: lever
+  # #   url: https://jobs.lever.co/usasurveyjob
+
+  # - name: trendyol/
+  #   type: lever
+  #   url: https://jobs.lever.co/trendyol/
+
+  # - name: HungerStation
+  #   type: lever
+  #   url: https://jobs.lever.co/hungerstation
+
+  # - name: Nana
+  #   type: lever
+  #   url: https://jobs.lever.co/nana
+
+
+  # # 🟠 Workday (enterprise, hard)
+  # - name: Saudi Aramco
+  #   type: workday
+  #   url: https://aramco.wd3.myworkdayjobs.com/en-US/External
+
+  # - name: SABIC
+  #   type: workday
+  #   url: https://sabic.wd3.myworkdayjobs.com/en-US/SABIC_Careers
+
+  # - name: STC
+  #   type: workday
+  #   url: https://stcgroup.wd3.myworkdayjobs.com/en-US/stccareers
+
+  # - name: Al Rajhi Bank
+  #   type: workday
+  #   url: https://alrajhibank.wd3.myworkdayjobs.com/en-US/AlRajhiCareers
+
+  # - name: SNB
+  #   type: workday
+  #   url: https://snb.wd3.myworkdayjobs.com/en-US/SNB_Careers
+
+
+  # # 🟣 Generic HTML (CSS scraping)
+  # - name: NEOM
+  #   type: html
+  #   url: https://careers.neom.com
+
+  #   selector:
+  #     job_card: ".job"
+  #     title: ".job-title"
+  #     link: "a"
+  #     location: ".location"
+
+  # - name: Red Sea Global
+  #   type: html
+  #   url: https://careers.redseaglobal.com
+
+  #   selector:
+  #     job_card: ".job-card"
+  #     title: ".title"
+  #     link: "a"
+  #     location: ".location"
+
+  # - name: Diriyah Company
+  #   type: html
+  #   url: https://careers.diriyahcompany.sa
+
+  #   selector:
+  #     job_card: ".job-item"
+  #     title: ".job-title"
+  #     link: "a"
+  #     location: ".job-location"
+
+  # - name: ACWA Power
+  #   type: html
+  #   url: https://careers.acwapower.com
+
+  #   selector:
+  #     job_card: ".job"
+  #     title: ".title"
+  #     link: "a"
+  #     location: ".location"
+
+
+  # # 🟡 Mixed / fallback real companies
+  # - name: Zain KSA
+  #   type: html
+  #   url: https://careers.zain.com
+
+  # - name: Mobily
+  #   type: html
+  #   url: https://careers.mobily.com.sa
+
+  # - name: Alfanar
+  #   type: html
+  #   url: https://careers.alfanar.com
+
+  # - name: Elm Company
+  #   type: html
+  #   url: https://careers.elm.sa
+
+  # # 🔍 Indeed Search
+  # - name: Indeed Saudi Arabia
+  #   type: indeed
+  #   url: "Software Engineer" # This will be used as a query
