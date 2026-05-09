@@ -17,9 +17,16 @@ def init_db():
         title TEXT,
         company TEXT,
         location TEXT,
-        url TEXT
+        url TEXT,
+        posted_at TEXT
     )
     """)
+    
+    # Migration: Add posted_at if it doesn't exist
+    try:
+        cur.execute("ALTER TABLE jobs ADD COLUMN posted_at TEXT")
+    except sqlite3.OperationalError:
+        pass # Already exists
 
     conn.commit()
     conn.close()
@@ -30,9 +37,9 @@ def save_job(job):
     cur = conn.cursor()
 
     cur.execute("""
-    INSERT OR IGNORE INTO jobs (id, title, company, location, url)
-    VALUES (?, ?, ?, ?, ?)
-    """, (job.id, job.title, job.company, job.location, job.url))
+    INSERT OR IGNORE INTO jobs (id, title, company, location, url, posted_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, (job.id, job.title, job.company, job.location, job.url, job.posted_at))
 
     conn.commit()
     conn.close()

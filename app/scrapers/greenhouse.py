@@ -36,7 +36,8 @@ class GreenhouseScraper(BaseScraper):
                     title=item.get("title"),
                     company="",
                     location=item.get("location", {}).get("name"),
-                    url=item.get("absolute_url")
+                    url=item.get("absolute_url"),
+                    posted_at=item.get("updated_at")
                 ))
         else:
             # HTML parsing for Greenhouse
@@ -50,5 +51,5 @@ class GreenhouseScraper(BaseScraper):
                     title = link.get_text(strip=True)
                     url = urljoin(raw_data["base_url"], link.get("href"))
                     location = loc.get_text(strip=True) if loc else "N/A"
-                    jobs.append(Job(id="", title=title, company="", location=location, url=url))
+                    jobs.append(Job(id="", title=title, company="", location=location, url=url, posted_at=None))
         return jobs

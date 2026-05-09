@@ -7,6 +7,7 @@ A modular job monitoring system that tracks career pages and sends notifications
 - **Lever** (API & HTML Fallback)
 - **Workday** (API with custom headers)
 - **SmartRecruiters** (Search API)
+- **Workable** (Search API with 7-day range)
 - **Generic HTML** (CSS Selector based)
 
 ## Setup

@@ -63,6 +63,7 @@ class WorkdayScraper(BaseScraper):
                 title=item.get("title"),
                 company="",
                 location=item.get("locationsText"),
-                url=full_url
+                url=full_url,
+                posted_at=item.get("postedOn")
             ))
         return jobs

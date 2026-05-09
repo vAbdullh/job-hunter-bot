@@ -31,6 +31,15 @@ def run(enable_discovery=False):
             "url": f"https://jobs.smartrecruiters.com/sr-jobs/search?limit=100&keyword={kw}",
             "type": "smartrecruiters"
         })
+    
+    # Add Workable API scans
+    workable_keywords = ["Jeddah", "Makkah", "Riyadh", "Saudi Arabia", "KSA"]
+    for kw in workable_keywords:
+        companies.append({
+            "name": f"Workable Search ({kw})",
+            "url": f"https://jobs.workable.com/api/v1/jobs?location={kw}&day_range=7",
+            "type": "workable"
+        })
 
     logging.info(f"Processing total of {len(companies)} companies")
 

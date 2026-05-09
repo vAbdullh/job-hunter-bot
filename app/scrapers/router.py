@@ -3,6 +3,7 @@ from app.scrapers.lever import LeverScraper
 from app.scrapers.workday import WorkdayScraper
 from app.scrapers.generic import GenericHTMLScraper
 from app.scrapers.smartrecruiters import SmartRecruitersScraper
+from app.scrapers.workable import WorkableScraper
 
 def get_scraper(company_config):
     stype = company_config.get("type", "html").lower()
@@ -15,6 +16,8 @@ def get_scraper(company_config):
         return WorkdayScraper()
     elif stype in ["smartrecruiters", "api_json"]:
         return SmartRecruitersScraper()
+    elif stype == "workable":
+        return WorkableScraper()
     elif stype == "html":
         return GenericHTMLScraper(selector_config=company_config.get("selector"))
     else:

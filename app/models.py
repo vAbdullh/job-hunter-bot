@@ -7,3 +7,4 @@ class Job(BaseModel):
     company: str
     location: str | None = None
     url: str
+    posted_at: str | None = None

@@ -28,7 +28,8 @@ class LeverScraper(BaseScraper):
                     title=item.get("text"),
                     company="",
                     location=item.get("categories", {}).get("location"),
-                    url=item.get("hostedUrl")
+                    url=item.get("hostedUrl"),
+                    posted_at=item.get("createdAt")
                 ))
         else:
             # HTML parsing for Lever
@@ -43,5 +44,5 @@ class LeverScraper(BaseScraper):
                     title = title_elem.get_text(strip=True)
                     url = urljoin(raw_data["base_url"], link.get("href"))
                     location = loc.get_text(strip=True) if loc else "N/A"
-                    jobs.append(Job(id="", title=title, company="", location=location, url=url))
+                    jobs.append(Job(id="", title=title, company="", location=location, url=url, posted_at=None))
         return jobs
