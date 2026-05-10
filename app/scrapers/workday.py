@@ -27,7 +27,8 @@ class WorkdayScraper(BaseScraper):
             "appliedFacets": {},
             "limit": 20,
             "offset": 0,
-            "searchText": ""
+            "searchText": "",
+            "languageCode": "en-US"
         }
         
         try:
@@ -38,9 +39,6 @@ class WorkdayScraper(BaseScraper):
                 # Some sites have /en-US/External but API is /External
                 if "en-US" in parts:
                     api_url = f"https://{domain}/wday/cxs/{tenant}/{subdomain}/jobs"
-                    # Wait, it's already using parts[-1] which is External.
-                    # Maybe it needs languageCode in payload
-                    payload["languageCode"] = "en-US"
                     response = requests.post(api_url, headers=headers, json=payload, timeout=15)
             
             response.raise_for_status()
@@ -52,18 +50,51 @@ class WorkdayScraper(BaseScraper):
         jobs = []
         data = raw_data["data"]
         base_url = raw_data["base_url"]
+        domain = base_url.split("/")[2]
+        tenant = domain.split(".")[0]
+        subdomain = base_url.split("/")[-1]
         
+        # Use a session for faster detail fetching
+        session = requests.Session()
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "application/json"
+        })
+
         for item in data.get("jobPostings", []):
-            # Construct full URL: base_url + externalPath
             external_path = item.get("externalPath")
             full_url = urljoin(base_url + "/", external_path.lstrip("/")) if external_path else base_url
             
+            bullets = item.get("bulletFields", [])
+            location = item.get("locationsText")
+            if not location and bullets:
+                location = bullets[0]
+            
+            posted_at = item.get("postedOn")
+            
+            # If date is missing (common in some Workday sites), try a quick fetch of details
+            if not posted_at and external_path:
+                try:
+                    # Construct detail API URL
+                    detail_api = f"https://{domain}/wday/cxs/{tenant}/{subdomain}{external_path}"
+                    resp = session.get(detail_api, timeout=5)
+                    if resp.status_code == 200:
+                        posted_at = resp.json().get("jobPostingInfo", {}).get("postedOn")
+                except:
+                    pass
+
+            if not posted_at and bullets:
+                for b in bullets:
+                    if "Posted" in b or "Today" in b or "Yesterday" in b:
+                        posted_at = b
+                        break
+
             jobs.append(Job(
                 id="",
                 title=item.get("title"),
-                company="",
-                location=item.get("locationsText"),
+                company="Unknown",
+                location=location,
                 url=full_url,
-                posted_at=item.get("postedOn")
+                posted_at=posted_at
             ))
         return jobs

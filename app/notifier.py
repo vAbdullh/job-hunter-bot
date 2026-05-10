@@ -120,7 +120,7 @@ def send_telegram(job):
         f"*الشركة:* {escape_markdown(job.company)}\n"
         f"*الموقع:* {escape_markdown(job.location or 'N/A')}\n"
         f"*منذ:* {escape_markdown(format_posted_at(job.posted_at, 'ar'))}\n\n"
-        f"[🔗 رابط التقديم]({job.url})"
+        f"[🔗 رابط التقديم]({escape_markdown(job.url)})"
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"

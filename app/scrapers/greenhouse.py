@@ -34,7 +34,7 @@ class GreenhouseScraper(BaseScraper):
                 jobs.append(Job(
                     id="",
                     title=item.get("title"),
-                    company="",
+                    company="Unknown",
                     location=item.get("location", {}).get("name"),
                     url=item.get("absolute_url"),
                     posted_at=item.get("updated_at")

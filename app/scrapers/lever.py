@@ -26,10 +26,10 @@ class LeverScraper(BaseScraper):
                 jobs.append(Job(
                     id="",
                     title=item.get("text"),
-                    company="",
+                    company="Unknown",
                     location=item.get("categories", {}).get("location"),
                     url=item.get("hostedUrl"),
-                    posted_at=item.get("createdAt")
+                    posted_at=str(item.get("createdAt", ""))
                 ))
         else:
             # HTML parsing for Lever
