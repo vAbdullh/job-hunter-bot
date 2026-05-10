@@ -8,8 +8,12 @@ from app.notifier import send_discord, send_telegram
 from app.scrapers.router import get_scraper
 from app.discovery import DiscoveryService
 
+from app.utils import get_job_age_minutes
+
 # Basic logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+MAX_AGE_HOURS = int(os.getenv("MAX_AGE_HOURS", 7))
 
 def run(enable_discovery=False, enable_discord=True, enable_telegram=False):
     init_db()
@@ -48,6 +52,7 @@ def run(enable_discovery=False, enable_discord=True, enable_telegram=False):
     for company_config in companies:
         name = company_config["name"]
         url = company_config["url"]
+        is_search = "Search" in name
         logging.info(f"--- Checking: {name} ---")
 
         try:
@@ -58,18 +63,32 @@ def run(enable_discovery=False, enable_discord=True, enable_telegram=False):
             new_jobs_count = 0
             for job in jobs:
                 # Normalize job data
-                # Normalize job data
                 if not job.company or job.company == "Unknown":
-                    # If it's a search scraper, don't use the scraper name as company name
-                    if "Search" in name:
+                    if is_search:
                         job.company = "Unknown Company"
                     else:
                         job.company = name
+                
                 job.id = make_job_id(job.company, job.title, job.location, job.url)
                 
                 if job_exists(job.id):
-                    logging.info(f"Reached existing job for {name}. Stopping further scans for this company.")
-                    break
+                    if is_search:
+                        # For search results, we don't stop entirely because they might not be sorted
+                        continue
+                    else:
+                        logging.info(f"Reached existing job for {name}. Stopping further scans for this company.")
+                        break
+                
+                # Filter by age (7 hours)
+                age_mins = get_job_age_minutes(job.posted_at)
+                if age_mins > MAX_AGE_HOURS * 60:
+                    if not is_search:
+                        # If a company-specific board is sorted, we can stop
+                        logging.info(f"Reached job older than {MAX_AGE_HOURS} hours for {name}. Stopping.")
+                        break
+                    else:
+                        # For search results, just skip this job and check others
+                        continue
                 
                 save_job(job)
                 try:
