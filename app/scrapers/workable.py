@@ -21,6 +21,7 @@ class WorkableScraper(BaseScraper):
                 id="", # Will be set by make_job_id
                 title=item.get("title"),
                 company=(
+                    item.get("company", {}).get("title") or 
                     item.get("company", {}).get("name") or 
                     item.get("company_name") or 
                     "Unknown"
