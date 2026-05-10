@@ -18,7 +18,11 @@ class SmartRecruitersScraper(BaseScraper):
             jobs.append(Job(
                 id="",
                 title=item.get("name"),
-                company=item.get("company", {}).get("name") or "Unknown",
+                company=(
+                    item.get("company", {}).get("name") or 
+                    item.get("companyName") or 
+                    "Unknown"
+                ),
                 location=item.get("location", {}).get("city"),
                 url=f"https://jobs.smartrecruiters.com/{item.get('company', {}).get('identifier')}/{item.get('id')}",
                 posted_at=item.get("releasedDate")

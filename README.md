@@ -29,18 +29,25 @@ A modular job monitoring system that tracks career pages and sends notifications
 
 ## Usage
 
-**Run standard scan:**
+**Run standard scan (Discord only by default):**
 ```bash
 python -m app.main
 ```
 
-**Run with Search Engine Discovery (find new boards):**
+**Run with specific notifications:**
 ```bash
-python -m app.main --discover
+python -m app.main --dis --tel
+```
+
+**Run with Search Engine Discovery:**
+```bash
+python -m app.main --discover --tel
 ```
 
 ## example.env
 ```text
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+TELEGRAM_BOT_TOKEN=123456789:ABCDefGh...
+TELEGRAM_CHAT_ID=987654321
 DB_PATH=data/jobs.db
 ```

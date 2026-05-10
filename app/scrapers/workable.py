@@ -20,7 +20,11 @@ class WorkableScraper(BaseScraper):
             jobs.append(Job(
                 id="", # Will be set by make_job_id
                 title=item.get("title"),
-                company=item.get("company", {}).get("name") or "Unknown",
+                company=(
+                    item.get("company", {}).get("name") or 
+                    item.get("company_name") or 
+                    "Unknown"
+                ),
                 location=location,
                 url=item.get("url"),
                 posted_at=item.get("created")

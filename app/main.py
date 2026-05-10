@@ -1,15 +1,17 @@
 import logging
+import os
+import time
 from app.store import init_db, job_exists, save_job
 from app.config_loader import load_companies
 from app.dedupe import make_job_id
-from app.notifier import send_discord
+from app.notifier import send_discord, send_telegram
 from app.scrapers.router import get_scraper
 from app.discovery import DiscoveryService
 
 # Basic logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def run(enable_discovery=False):
+def run(enable_discovery=False, enable_discord=True, enable_telegram=False):
     init_db()
     companies = load_companies()
     
@@ -56,7 +58,13 @@ def run(enable_discovery=False):
             new_jobs_count = 0
             for job in jobs:
                 # Normalize job data
-                job.company = name
+                # Normalize job data
+                if not job.company or job.company == "Unknown":
+                    # If it's a search scraper, don't use the scraper name as company name
+                    if "Search" in name:
+                        job.company = "Unknown Company"
+                    else:
+                        job.company = name
                 job.id = make_job_id(job.company, job.title, job.location, job.url)
                 
                 if job_exists(job.id):
@@ -65,8 +73,13 @@ def run(enable_discovery=False):
                 
                 save_job(job)
                 try:
-                    send_discord(job)
+                    if enable_discord:
+                        send_discord(job)
+                    if enable_telegram:
+                        send_telegram(job)
                     new_jobs_count += 1
+                    # Rate limiting: wait 4 seconds between notifications
+                    time.sleep(4)
                 except Exception as e:
                     logging.error(f"Failed to send notification for {job.title}: {e}")
             
@@ -82,4 +95,20 @@ def run(enable_discovery=False):
 if __name__ == "__main__":
     import sys
     discovery_mode = "--discover" in sys.argv
-    run(enable_discovery=discovery_mode)
+    
+    # If no flags passed, default to Discord if available
+    # If specific flags passed, follow them
+    dis_flag = "--dis" in sys.argv
+    tel_flag = "--tel" in sys.argv
+    
+    # Logic: if no notification flags are provided, we'll try to use what's in env
+    # But if the user explicitly used flags, we only use those.
+    if not dis_flag and not tel_flag:
+        # Check env to decide defaults
+        use_dis = os.getenv("DISCORD_WEBHOOK_URL") is not None
+        use_tel = os.getenv("TELEGRAM_BOT_TOKEN") is not None
+    else:
+        use_dis = dis_flag
+        use_tel = tel_flag
+
+    run(enable_discovery=discovery_mode, enable_discord=use_dis, enable_telegram=use_tel)
