@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import requests
 from datetime import datetime, timezone
@@ -9,6 +10,58 @@ load_dotenv()
 WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+# Technical jobs specific channels
+WEBHOOK_URL_TECH = os.getenv("DISCORD_WEBHOOK_URL_TECH")
+TELEGRAM_CHAT_ID_TECH = os.getenv("TELEGRAM_CHAT_ID_TECH")
+
+
+def is_technical_job(title):
+    if not title:
+        return False
+    title_lower = title.lower()
+    
+    # Direct tech keywords/roles
+    direct_tech_keywords = [
+        "developer", "programmer", "webmaster", "frontend", "front-end", 
+        "backend", "back-end", "fullstack", "full-stack", "devops", "sysadmin", 
+        "cybersecurity", "cyber security", "cloud", "ui/ux", "ux/ui", "helpdesk", "help desk",
+        "data scientist", "data analyst", "data science", "data engineer",
+        "database", "network administrator", "network specialist", "systems administrator",
+        "information technology", "computer science", "software",
+        "python", "javascript", "typescript", "react", "flutter", "laravel", "django", 
+        "kubernetes", "docker", "aws", "azure", "gcp", "golang", "swift", "kotlin",
+        # Arabic technical terms
+        "مبرمج", "مطور", "برمجيات", "شبكات", "بيانات", "سحابية", 
+        "أمن سيبراني", "أمن المعلومات", "دعم فني", "قواعد بيانات"
+    ]
+    
+    for kw in direct_tech_keywords:
+        if kw in title_lower:
+            return True
+            
+    # Whole-word only keywords to avoid false positives (e.g. 'it' matching 'digital marketing specialist')
+    whole_words = ["it", "ict", "dev", "tech", "web", "برمجة", "حاسب", "نظم"]
+    for word in whole_words:
+        pattern = r'\b' + re.escape(word) + r'\b'
+        if re.search(pattern, title_lower):
+            return True
+            
+    # Engineer check (only count if it's a tech/IT/software engineer)
+    if "engineer" in title_lower or "مهندس" in title_lower:
+        tech_prefixes = [
+            "software", "system", "network", "cloud", "devops", "data", "security", 
+            "computer", "qa", "test", "web", "it", "infrastructure", "platform", "sre", 
+            "fullstack", "full-stack", "frontend", "backend", "application", "support",
+            # Arabic
+            "برمجيات", "شبكات", "حاسب", "معلومات", "اتصالات", "نظم"
+        ]
+        for pref in tech_prefixes:
+            if pref in title_lower:
+                return True
+
+    return False
+
 
 
 def escape_markdown(text):
@@ -103,17 +156,24 @@ def send_discord(job):
         "content": "@everyone"
     }
 
+    # Always send to the main/general channel
     response = requests.post(WEBHOOK_URL, json=payload)
-
     if response.status_code not in (200, 204):
         print("Failed to send Discord notification")
         print(response.text)
+
+    # If it is a technical job and a technical webhook is configured, send to it as well
+    if WEBHOOK_URL_TECH and is_technical_job(job.title):
+        response_tech = requests.post(WEBHOOK_URL_TECH, json=payload)
+        if response_tech.status_code not in (200, 204):
+            print("Failed to send Discord notification to technical channel")
+            print(response_tech.text)
 
 
 def send_telegram(job):
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         raise ValueError("Telegram credentials not set")
-# make it arabic
+
     message = (
         f"🟢 *وظيفة جديدة* \\| _{escape_markdown(job.location or 'Saudi Arabia')}_\n\n"
         f"*المسمى الوظيفي:* {escape_markdown(job.title)}\n"
@@ -124,12 +184,26 @@ def send_telegram(job):
     )
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    
+    # Send to the main/general Telegram channel
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": "MarkdownV2"
     }
+    _execute_telegram_send(url, payload)
 
+    # If it is a technical job and a technical Telegram chat ID is configured, send to it as well
+    if TELEGRAM_CHAT_ID_TECH and is_technical_job(job.title):
+        payload_tech = {
+            "chat_id": TELEGRAM_CHAT_ID_TECH,
+            "text": message,
+            "parse_mode": "MarkdownV2"
+        }
+        _execute_telegram_send(url, payload_tech)
+
+
+def _execute_telegram_send(url, payload):
     response = requests.post(url, json=payload)
     
     if response.status_code == 429:
@@ -139,5 +213,6 @@ def send_telegram(job):
         response = requests.post(url, json=payload) # Retry once
 
     if response.status_code != 200:
-        print("Failed to send Telegram notification")
+        print(f"Failed to send Telegram notification to chat {payload.get('chat_id')}")
         print(response.text)
+
